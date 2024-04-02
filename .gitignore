@@ -6,6 +6,7 @@ generated
 application-local.yml
 target
 zero-generator.iml
+acm-template.iml
 
 ### Java template
 # Compiled class file
@@ -45,3 +46,4 @@ buildNumber.properties
 # https://github.com/takari/maven-wrapper#usage-without-binary-jar
 .mvn/wrapper/maven-wrapper.jar
 
+/zero-generator-demo-projects/acm-templete/acm-templete.iml
