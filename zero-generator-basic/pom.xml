@@ -16,6 +16,12 @@
 
 
     <dependencies>
+        <!-- https://picocli.info -->
+        <dependency>
+            <groupId>info.picocli</groupId>
+            <artifactId>picocli</artifactId>
+            <version>4.7.5</version>
+        </dependency>
         <!-- https://freemarker.apache.org/index.html -->
         <dependency>
             <groupId>org.freemarker</groupId>
