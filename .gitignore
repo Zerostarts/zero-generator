@@ -9,15 +9,12 @@ zero-generator.iml
 acm-template.iml
 zero-generator-demo-projects.iml
 
-
-
 ### Java template
 # Compiled class file
 *.class
 
 # Log file
 *.log
-
 # BlueJ files
 *.ctxt
 
