@@ -1,4 +1,4 @@
-package com.star.cli.example.pattern;
+package com.star.cli.pattern;
 
 public class TurnOnCommand implements Command{
     private Device device;

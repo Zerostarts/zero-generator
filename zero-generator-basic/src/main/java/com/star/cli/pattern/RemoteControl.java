@@ -1,4 +1,4 @@
-package com.star.cli.example.pattern;
+package com.star.cli.pattern;
 
 /**
  * 遥控器类
