@@ -1,4 +1,4 @@
-package com.star.pattern;
+package com.star.cli.example.pattern;
 
 /**
  * 电视机类
