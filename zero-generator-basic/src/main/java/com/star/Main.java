@@ -9,8 +9,9 @@ public class Main {
 //        args = new String[]{"config"};
 //        args = new String[]{"list"};
 
-        CommandExecutor commandExecutor = new CommandExecutor();
-        commandExecutor.doExecute(args);
+//        CommandExecutor commandExecutor = new CommandExecutor();
+//        commandExecutor.doExecute(args);
+        System.out.println("Hello world!");
 
     }
 }
