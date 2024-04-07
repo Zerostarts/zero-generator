@@ -8,6 +8,7 @@ target
 zero-generator.iml
 acm-template.iml
 zero-generator-demo-projects.iml
+zero-generator-basic.iml
 
 ### Java template
 # Compiled class file
