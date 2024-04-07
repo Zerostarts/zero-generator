@@ -22,8 +22,18 @@ public class Meta {
     @NoArgsConstructor
     @Data
     public static class FileConfig {
+        /**
+         * 输入相对路径
+         */
         private String inputRootPath;
+        /**
+         * 输出路径
+         */
         private String outputRootPath;
+        /**
+         * 输入绝对路径
+         */
+        private String sourceRootPath;
         private String type;
         private List<FileInfo> files;
 

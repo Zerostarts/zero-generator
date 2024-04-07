@@ -6,7 +6,8 @@
   "author": "star",
   "createTime": "2024-4-5",
   "fileConfig": {
-    "inputRootPath": "D:/Ideaproject/zero-generator/zero-generator-demo-projects/acm-template-demo-pro",
+    "inputRootPath": ".source/acm-template-demo-pro",
+    "sourceRootPath": "D:/Ideaproject/zero-generator/zero-generator-demo-projects/acm-template-demo-pro",
     "outputRootPath": "generated",
     "type": "dir",
     "files": [
