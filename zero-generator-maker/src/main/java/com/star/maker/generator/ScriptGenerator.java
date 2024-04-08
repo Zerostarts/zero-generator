@@ -31,7 +31,7 @@ public class ScriptGenerator {
         //windows
         sb = new StringBuilder();
         sb.append("@echo off").append("\n");
-        sb.append(String.format("java -jar -D-Dfile.encoding=UTF-8 %s %%*",jarPath)).append("\n");
+        sb.append(String.format("java -jar -Dfile.encoding=UTF-8 %s %%*",jarPath)).append("\n");
         FileUtil.writeBytes(sb.toString().getBytes(StandardCharsets.UTF_8), outputPath + ".bat");
 
     }
