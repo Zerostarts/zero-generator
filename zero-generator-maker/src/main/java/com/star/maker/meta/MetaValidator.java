@@ -12,6 +12,7 @@ import java.io.File;
 import java.nio.file.Paths;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 程序的健壮性
@@ -40,6 +41,17 @@ public class MetaValidator {
             return;
         }
         for (Meta.ModelConfig.ModelInfo modelInfo : modelInfoList) {
+
+            //为Group
+            String groupKey = modelInfo.getGroupKey();
+            if (StrUtil.isNotEmpty(groupKey)) {
+                List<Meta.ModelConfig.ModelInfo> subModelInfoList = modelInfo.getModels();
+                String allArgsStr = modelInfo.getModels().stream()
+                        .map(subModelInfo -> String.format("\"--%s\"", subModelInfo, modelInfo.getFieldName()))
+                        .collect(Collectors.joining(","));
+                modelInfo.setAllArgsStr(allArgsStr);
+                continue;
+            }
             //输出路径默认值
             String fieldName = modelInfo.getFieldName();
 
@@ -92,6 +104,12 @@ public class MetaValidator {
             String outputPath = fileInfo.getOutputPath();
             String type = fileInfo.getType();
             String generateType = fileInfo.getGenerateType();
+
+
+            // 类型为 group，不校验
+            if (FileTypeEnum.GROUP.getValue().equals(type)) {
+                continue;
+            }
             //inputPath必填
             if (StrUtil.isBlank(inputPath)) {
                 throw new MetaException("未填写 inputPath");

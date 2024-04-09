@@ -1,6 +1,7 @@
 package com.star.maker.generator.file;
 
 
+import com.star.maker.model.DataModel;
 import freemarker.template.TemplateException;
 
 import java.io.File;
@@ -18,7 +19,7 @@ public class MainGenerator {
      * @throws TemplateException
      * @throws IOException
      */
-    public static void doGenerate(Object model) throws TemplateException, IOException {
+    public static void doGenerate(DataModel model) throws TemplateException, IOException {
         String projectPath = System.getProperty("user.dir");
         File parentFile = new File(projectPath).getParentFile();
 

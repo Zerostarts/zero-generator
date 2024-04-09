@@ -16,7 +16,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class MainGenerator extends GenerateTemplate{
-//    public static void main(String[] args) throws TemplateException, IOException, InterruptedException {
+//    public static void main(String[] args) throws Templ   ateException, IOException, InterruptedException {
 //        Meta meta = MetaManager.getMetaObject();
 //        MetaValidator.validate(meta);
 //        System.out.println(meta);
