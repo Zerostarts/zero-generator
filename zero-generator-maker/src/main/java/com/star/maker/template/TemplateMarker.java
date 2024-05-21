@@ -7,6 +7,10 @@ import cn.hutool.json.JSONUtil;
 import com.star.maker.meta.Meta;
 import com.star.maker.meta.enums.FileGenerateTypeEnum;
 import com.star.maker.meta.enums.FileTypeEnum;
+import com.star.maker.template.enums.FileFilterRangeEnum;
+import com.star.maker.template.enums.FileFilterRuleEnum;
+import com.star.maker.template.model.FileFilterConfig;
+import com.star.maker.template.model.TemplateMarkFileConfig;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -22,13 +26,13 @@ public class TemplateMarker {
      * 制作末班和meta
      * @param newMeta
      * @param originProjectPath   文件原始项目路径
-     * @param fileInputPathList 文件输入路径列表
+     * @param //fileInputPathList 文件输入路径列表
      * @param modelInfo
      * @param searchStr
      * @param id
      * @return
      */
-    public static long makeTemplate(Meta newMeta, String originProjectPath, List<String> fileInputPathList,
+    public static long makeTemplate(Meta newMeta, String originProjectPath, TemplateMarkFileConfig templateMarkFileConfig,
                                     Meta.ModelConfig.ModelInfo modelInfo, String searchStr, Long id) {
         if (null == id) {
             id = IdUtil.getSnowflakeNextId();
@@ -52,22 +56,23 @@ public class TemplateMarker {
 
         List<Meta.FileConfig.FileInfo> newFileInfoList = new ArrayList<>();
 
-        // 多个目录生成模板
-        for (String fileInputPath: fileInputPathList) {
+        List<TemplateMarkFileConfig.FileInfoConfig> fileInfoConfigList = templateMarkFileConfig.getFiles();
+
+        // 过滤 + 生成模板
+        for (TemplateMarkFileConfig.FileInfoConfig fileInfoConfig : fileInfoConfigList) {
+            // 获取文件的过滤信息
+            String fileInputPath = fileInfoConfig.getPath();
             String inputFileAbsolutePath = sourRootPath + File.separator + fileInputPath;
-            // 看要制作的模板是文件还是目录
-            if (FileUtil.isDirectory(inputFileAbsolutePath)) {
-                List<File> fileList = FileUtil.loopFiles(inputFileAbsolutePath);
-                for (File file : fileList) {
-                    Meta.FileConfig.FileInfo fileInfo = makeFileTemplate(modelInfo, searchStr, sourRootPath, file);
-                    newFileInfoList.add(fileInfo);
-                }
-            } else {
-                Meta.FileConfig.FileInfo fileInfo = makeFileTemplate(modelInfo, searchStr, sourRootPath, new File(inputFileAbsolutePath));
+
+            List<File> fileList = FileFilter.doFilter(inputFileAbsolutePath, fileInfoConfig.getFileFilterConfigList());
+            for (File file : fileList) {
+                Meta.FileConfig.FileInfo fileInfo = makeFileTemplate(modelInfo, searchStr, sourRootPath, file);
                 newFileInfoList.add(fileInfo);
             }
 
         }
+
+
 
         // 三、生成配置文件
         String metaOutputPath = sourRootPath + File.separator + "meta.json";
@@ -221,14 +226,37 @@ public class TemplateMarker {
 //        modelInfo.setDefaultValue("sum = ");
 //        String str = "Sum is ";
 
+        // 模板参数要挖坑的str， 挖成${classname}
         Meta.ModelConfig.ModelInfo modelInfo = new Meta.ModelConfig.ModelInfo();
         modelInfo.setFieldName("className");
         modelInfo.setType("String");
         String str = "BaseResponse";
 
-        List<String> inputFileList = Arrays.asList(fileInputPath1,fileInputPath2);
 
-        long id = makeTemplate(meta, originProjectPath, inputFileList, modelInfo, str, 1792188308500115456L);
+        //文件顾虑配置
+        TemplateMarkFileConfig.FileInfoConfig fileInfoConfig1 = new TemplateMarkFileConfig.FileInfoConfig();
+        fileInfoConfig1.setPath(fileInputPath1);
+        List<FileFilterConfig> fileFilterConfigList1 = new ArrayList<>();
+        FileFilterConfig fileFilterConfig = FileFilterConfig
+                .builder()
+                .range(FileFilterRangeEnum.FILE_NAME.getValue())
+                .rule(FileFilterRuleEnum.CONTAINS.getValue())
+                .value("Base")
+                .build();
+        fileFilterConfigList1.add(fileFilterConfig);
+        fileInfoConfig1.setFileFilterConfigList(fileFilterConfigList1);
+
+
+
+        TemplateMarkFileConfig.FileInfoConfig fileInfoConfig2 = new TemplateMarkFileConfig.FileInfoConfig();
+        fileInfoConfig2.setPath(fileInputPath2);
+
+        List<TemplateMarkFileConfig.FileInfoConfig> fileInfoConfigList = Arrays.asList(fileInfoConfig1,fileInfoConfig2);
+        TemplateMarkFileConfig templateMarkFileConfig = new TemplateMarkFileConfig();
+        templateMarkFileConfig.setFiles(fileInfoConfigList);
+
+
+        long id = makeTemplate(meta, originProjectPath, templateMarkFileConfig, modelInfo, str, 1792188308500115456L);
         System.out.println(id);
 
 

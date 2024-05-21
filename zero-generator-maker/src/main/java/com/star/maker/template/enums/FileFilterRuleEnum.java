@@ -1,4 +1,4 @@
-package com.star.maker.template.model.enums;
+package com.star.maker.template.enums;
 
 import cn.hutool.core.util.ObjectUtil;
 
@@ -30,10 +30,10 @@ public enum FileFilterRuleEnum {
         return text;
     }
 
-    public String getValue() {
+    public  String getValue() {
         return value;
     }
-    public FileFilterRuleEnum getEnumByValues(String value) {
+    public static FileFilterRuleEnum getEnumByValues(String value) {
         if (ObjectUtil.isEmpty(value)) {
             return null;
         }
