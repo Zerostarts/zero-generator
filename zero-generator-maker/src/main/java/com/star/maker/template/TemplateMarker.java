@@ -10,14 +10,11 @@ import com.star.maker.meta.enums.FileTypeEnum;
 import com.star.maker.template.enums.FileFilterRangeEnum;
 import com.star.maker.template.enums.FileFilterRuleEnum;
 import com.star.maker.template.model.FileFilterConfig;
-import com.star.maker.template.model.TemplateMarkFileConfig;
+import com.star.maker.template.model.TemplateMakerFileConfig;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TemplateMarker {
@@ -32,7 +29,7 @@ public class TemplateMarker {
      * @param id
      * @return
      */
-    public static long makeTemplate(Meta newMeta, String originProjectPath, TemplateMarkFileConfig templateMarkFileConfig,
+    public static long makeTemplate(Meta newMeta, String originProjectPath, TemplateMakerFileConfig templateMakerFileConfig,
                                     Meta.ModelConfig.ModelInfo modelInfo, String searchStr, Long id) {
         if (null == id) {
             id = IdUtil.getSnowflakeNextId();
@@ -56,10 +53,10 @@ public class TemplateMarker {
 
         List<Meta.FileConfig.FileInfo> newFileInfoList = new ArrayList<>();
 
-        List<TemplateMarkFileConfig.FileInfoConfig> fileInfoConfigList = templateMarkFileConfig.getFiles();
+        List<TemplateMakerFileConfig.FileInfoConfig> fileInfoConfigList = templateMakerFileConfig.getFiles();
 
         // 过滤 + 生成模板
-        for (TemplateMarkFileConfig.FileInfoConfig fileInfoConfig : fileInfoConfigList) {
+        for (TemplateMakerFileConfig.FileInfoConfig fileInfoConfig : fileInfoConfigList) {
             // 获取文件的过滤信息
             String fileInputPath = fileInfoConfig.getPath();
             String inputFileAbsolutePath = sourRootPath + File.separator + fileInputPath;
@@ -67,10 +64,31 @@ public class TemplateMarker {
             List<File> fileList = FileFilter.doFilter(inputFileAbsolutePath, fileInfoConfig.getFileFilterConfigList());
             for (File file : fileList) {
                 Meta.FileConfig.FileInfo fileInfo = makeFileTemplate(modelInfo, searchStr, sourRootPath, file);
+                //制作好的模板文件列表
                 newFileInfoList.add(fileInfo);
             }
 
         }
+        // 如果是文件组
+        TemplateMakerFileConfig.FileGroupConfig fileGroupConfig = templateMakerFileConfig.getFileGroupConfig();
+
+        if (fileGroupConfig != null) {
+            String condition = fileGroupConfig.getCondition();
+            String groupKey = fileGroupConfig.getGroupKey();
+            String groupName = fileGroupConfig.getGroupName();
+            // 设置meta中的文件组
+            Meta.FileConfig.FileInfo groupFileInfo = new Meta.FileConfig.FileInfo();
+            groupFileInfo.setCondition(condition);
+            groupFileInfo.setGroupKey(groupKey);
+            groupFileInfo.setGroupName(groupName);
+            groupFileInfo.setFiles(newFileInfoList);
+
+            //文件组属于一级文件配置
+            newFileInfoList = new ArrayList<>();
+            newFileInfoList.add(groupFileInfo);
+        }
+
+
 
 
 
@@ -181,7 +199,37 @@ public class TemplateMarker {
      */
 
     public static List<Meta.FileConfig.FileInfo> distinctFiles(List<Meta.FileConfig.FileInfo> fileInfoList) {
-        Collection<Meta.FileConfig.FileInfo> values = fileInfoList.stream().collect(Collectors.toMap(Meta.FileConfig.FileInfo::getInputPath, o -> o, (e, r) -> r)).values();
+
+        //1. 将所有的文件配置FileInfo分为有分组的和无分组的
+
+        //先处理有分组的文件
+        Map<String, List<Meta.FileConfig.FileInfo>> groupKeyFileInfoListMap = fileInfoList.stream().filter(fileInfo -> StrUtil.isNotBlank(fileInfo.getGroupKey()))
+                .collect(
+                        Collectors.groupingBy(Meta.FileConfig.FileInfo::getGroupKey)
+                );
+
+
+        //2. 对于有分组的文件，如果有相同分组，同分组内的文件进行和并， 不同分组同时保留
+
+        for (Map.Entry<String, List<Meta.FileConfig.FileInfo>> entry: groupKeyFileInfoListMap.entrySet()) {
+            List<Meta.FileConfig.FileInfo> tempFileInfoList = entry.getValue();
+
+            List<Meta.FileConfig.FileInfo> newFileInfoList = new ArrayList<>(tempFileInfoList.stream()
+                    .flatMap(fileInfo -> fileInfo.getFiles().stream())
+                    .collect(
+                            Collectors.toMap(Meta.FileConfig.FileInfo::getInputPath, o -> o, (e, r) -> r)
+                    ).values());
+        }
+
+
+        //3. 创建新的文件配置列表，先将合并后的分组添加到结果列表
+
+        //4. 在将无分组文件配置列表添加到结果列表
+
+        Collection<Meta.FileConfig.FileInfo> values = fileInfoList.stream()
+                .collect(
+                        Collectors.toMap(Meta.FileConfig.FileInfo::getInputPath, o -> o, (e, r) -> r)
+                ).values();
 
         return new ArrayList<>(values);
     }
@@ -234,7 +282,7 @@ public class TemplateMarker {
 
 
         //文件顾虑配置
-        TemplateMarkFileConfig.FileInfoConfig fileInfoConfig1 = new TemplateMarkFileConfig.FileInfoConfig();
+        TemplateMakerFileConfig.FileInfoConfig fileInfoConfig1 = new TemplateMakerFileConfig.FileInfoConfig();
         fileInfoConfig1.setPath(fileInputPath1);
         List<FileFilterConfig> fileFilterConfigList1 = new ArrayList<>();
         FileFilterConfig fileFilterConfig = FileFilterConfig
@@ -248,15 +296,23 @@ public class TemplateMarker {
 
 
 
-        TemplateMarkFileConfig.FileInfoConfig fileInfoConfig2 = new TemplateMarkFileConfig.FileInfoConfig();
+        TemplateMakerFileConfig.FileInfoConfig fileInfoConfig2 = new TemplateMakerFileConfig.FileInfoConfig();
         fileInfoConfig2.setPath(fileInputPath2);
 
-        List<TemplateMarkFileConfig.FileInfoConfig> fileInfoConfigList = Arrays.asList(fileInfoConfig1,fileInfoConfig2);
-        TemplateMarkFileConfig templateMarkFileConfig = new TemplateMarkFileConfig();
-        templateMarkFileConfig.setFiles(fileInfoConfigList);
+        List<TemplateMakerFileConfig.FileInfoConfig> fileInfoConfigList = Arrays.asList(fileInfoConfig1,fileInfoConfig2);
+        TemplateMakerFileConfig templateMakerFileConfig = new TemplateMakerFileConfig();
+        templateMakerFileConfig.setFiles(fileInfoConfigList);
+
+        // 分组配置
+        TemplateMakerFileConfig.FileGroupConfig fileGroupConfig = new TemplateMakerFileConfig.FileGroupConfig();
+        fileGroupConfig.setCondition("outputText");
+        fileGroupConfig.setGroupKey("test");
+        fileGroupConfig.setGroupName("测试分组");
+        templateMakerFileConfig.setFileGroupConfig(fileGroupConfig);
+        
 
 
-        long id = makeTemplate(meta, originProjectPath, templateMarkFileConfig, modelInfo, str, 1792188308500115456L);
+        long id = makeTemplate(meta, originProjectPath, templateMakerFileConfig, modelInfo, str, 1792188308500115456L);
         System.out.println(id);
 
 
