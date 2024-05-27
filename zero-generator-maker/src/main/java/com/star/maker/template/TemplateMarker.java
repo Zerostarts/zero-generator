@@ -14,6 +14,7 @@ import com.star.maker.template.enums.FileFilterRuleEnum;
 import com.star.maker.template.model.FileFilterConfig;
 import com.star.maker.template.model.TemplateMakerFileConfig;
 import com.star.maker.template.model.TemplateMakerModelConfig;
+import freemarker.template.utility.StringUtil;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 public class TemplateMarker {
 
     /**
-     * 制作末班和meta
+     * 制作模板和meta
      * @param newMeta
      * @param originProjectPath   文件原始项目路径
      * @param //fileInputPathList 文件输入路径列表
@@ -97,6 +98,10 @@ public class TemplateMarker {
             String inputFileAbsolutePath = sourRootPath + File.separator + fileInputPath;
 
             List<File> fileList = FileFilter.doFilter(inputFileAbsolutePath, fileInfoConfig.getFileFilterConfigList());
+            fileList = fileList.stream()
+                    .filter(file -> {
+                        return file.getAbsolutePath().endsWith(".ftl");
+                    }).collect(Collectors.toList());
             for (File file : fileList) {
                 Meta.FileConfig.FileInfo fileInfo = makeFileTemplate(templateMakerModelConfig, sourRootPath, file);
                 //制作好的模板文件列表
@@ -192,7 +197,8 @@ public class TemplateMarker {
 
         String fileContent;
         //如果已经有模板，表示不是第一次制作
-        if (FileUtil.exist(fileOutputAbsolutePath)) {
+        boolean hasTemplateFile = FileUtil.exist(fileOutputAbsolutePath);
+        if (hasTemplateFile) {
             fileContent = FileUtil.readUtf8String(fileOutputAbsolutePath);;
         } else {
             fileContent = FileUtil.readUtf8String(fileInputAbsolutePath);;
@@ -225,16 +231,30 @@ public class TemplateMarker {
         //文件配置信息（具体的文件）
         Meta.FileConfig.FileInfo fileInfo = new Meta.FileConfig.FileInfo();
         fileInfo.setInputPath(fileInputPath);
+        fileInfo.setOutputPath(fileOutputPath);
         fileInfo.setType(FileTypeEnum.FILE.getValue());
+        fileInfo.setGenerateType(FileGenerateTypeEnum.DYNAMIC.getValue());
+
+        //是否更改了文件内容
 
 
-        if (fileContent.equals(newFileContent)) {
-            fileInfo.setGenerateType(FileGenerateTypeEnum.STATIC.getValue());
-            fileInfo.setOutputPath(fileInputPath);
-        } else {
-            fileInfo.setGenerateType(FileGenerateTypeEnum.DYNAMIC.getValue());
+        boolean contentEquals = fileContent.equals(newFileContent);
+        //之前不尊在模板文件，并且这次替换没有修改文档的内容，才是静态生成
+        if (!hasTemplateFile) {
+            if (contentEquals) {
+                fileInfo.setGenerateType(FileGenerateTypeEnum.STATIC.getValue());
+                fileInfo.setOutputPath(fileInputPath);
+
+            } else {
+
+                FileUtil.writeUtf8String(newFileContent, fileOutputAbsolutePath);
+            }
+        } else if (!contentEquals) {
+            //有模板文件，并且只能加了新坑，更新模板文件
             FileUtil.writeUtf8String(newFileContent, fileOutputAbsolutePath);
+
         }
+
 
 
         return fileInfo;
@@ -252,7 +272,8 @@ public class TemplateMarker {
         //先处理有分组的文件
         // {groupKey: a, files[1, 2], groupKey: a, files[3, 4]}  groupKey: b, files[4, 5]}
         // files[groupKey: a, files[[1, 2],[ 3, 4]]] ,[groupKey: b, files[4, 5]]
-        Map<String, List<Meta.FileConfig.FileInfo>> groupKeyFileInfoListMap = fileInfoList.stream().filter(fileInfo -> StrUtil.isNotBlank(fileInfo.getGroupKey()))
+        Map<String, List<Meta.FileConfig.FileInfo>> groupKeyFileInfoListMap = fileInfoList.stream().
+                filter(fileInfo -> StrUtil.isNotBlank(fileInfo.getGroupKey()))
                 .collect(
                         Collectors.groupingBy(Meta.FileConfig.FileInfo::getGroupKey)
                 );
@@ -360,7 +381,7 @@ public class TemplateMarker {
         String originProjectPath = FileUtil.getAbsolutePath(new File(projectPath).getParentFile() + File.separator + "zero-generator-demo-projects/springboot-init");
         // 文件
         String fileInputPath1 = "src/main/java/com/yupi/springbootinit/common";
-        String fileInputPath2 = "src/main/java/com/yupi/springbootinit/constant";
+        String fileInputPath2 = "src/main/java/com/yupi/springbootinit/config";
 
         // 输入模型参数信息
 
@@ -375,14 +396,10 @@ public class TemplateMarker {
 //        modelInfo.setDefaultValue("sum = ");
 //        String str = "Sum is ";
 
-        // 模板参数要挖坑的str， 挖成${classname}
-        Meta.ModelConfig.ModelInfo modelInfo = new Meta.ModelConfig.ModelInfo();
-        modelInfo.setFieldName("className");
-        modelInfo.setType("String");
-        String str = "BaseResponse";
 
 
-        //文件顾虑配置
+
+        //文件过滤配置
         TemplateMakerFileConfig.FileInfoConfig fileInfoConfig1 = new TemplateMakerFileConfig.FileInfoConfig();
         fileInfoConfig1.setPath(fileInputPath1);
         List<FileFilterConfig> fileFilterConfigList1 = new ArrayList<>();
@@ -412,6 +429,17 @@ public class TemplateMarker {
         templateMakerFileConfig.setFileGroupConfig(fileGroupConfig);
 
         TemplateMakerModelConfig templateMakerModelConfig = new TemplateMakerModelConfig();
+
+        // 模板参数要挖坑的str， 挖成${classname}
+        Meta.ModelConfig.ModelInfo modelInfo = new Meta.ModelConfig.ModelInfo();
+        modelInfo.setFieldName("className");
+        modelInfo.setType("String");
+        String str = "BaseResponse";
+
+        List<TemplateMakerModelConfig.ModelInfoConfig> modelInfoConfigList
+                = TemplateMakerModelConfig.templateModelInfoConfigAdapter(Arrays.asList(modelInfo), str);
+
+        templateMakerModelConfig.setModels(modelInfoConfigList);
 
 
         long id = makeTemplate(meta, originProjectPath, templateMakerFileConfig, templateMakerModelConfig, 1792188308500115456L);

@@ -37,6 +37,9 @@ public class FileFilter {
     public static boolean doSingleFileFilter(List<FileFilterConfig> fileFilterConfigList, File file) {
         String fileName = file.getName();
         String fileContent = FileUtil.readUtf8String(file);
+//        if(fileName.endsWith(".ftl")) {
+//            return false;
+//        }
 
         //所有过滤器检验结束后的结果
         boolean result = true;
