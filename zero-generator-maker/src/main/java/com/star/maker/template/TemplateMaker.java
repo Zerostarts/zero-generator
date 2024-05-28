@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.star.maker.meta.Meta;
@@ -12,28 +13,34 @@ import com.star.maker.meta.enums.FileTypeEnum;
 import com.star.maker.template.enums.FileFilterRangeEnum;
 import com.star.maker.template.enums.FileFilterRuleEnum;
 import com.star.maker.template.model.FileFilterConfig;
+import com.star.maker.template.model.TemplateMakerConfig;
 import com.star.maker.template.model.TemplateMakerFileConfig;
 import com.star.maker.template.model.TemplateMakerModelConfig;
-import freemarker.template.utility.StringUtil;
 
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class TemplateMarker {
+public class TemplateMaker {
 
     /**
      * 制作模板和meta
-     * @param newMeta
-     * @param originProjectPath   文件原始项目路径
+     * //@param newMeta
+     * //@param originProjectPath   文件原始项目路径
      * @param //fileInputPathList 文件输入路径列表
-     * @param id
+     * //@param id
      * @return
      */
-    public static long makeTemplate(Meta newMeta, String originProjectPath, TemplateMakerFileConfig templateMakerFileConfig,
-                                    TemplateMakerModelConfig templateMakerModelConfig, Long id) {
-        if (null == id) {
+    public static long makeTemplate(TemplateMakerConfig templateMakerConfig) {
+        Long id = templateMakerConfig.getId();
+        Meta newMeta = templateMakerConfig.getMeta();
+        String originProjectPath = templateMakerConfig.getOriginProjectPath();
+        TemplateMakerFileConfig templateMakerFileConfig = templateMakerConfig.getTemplateMakerFileConfig();
+        TemplateMakerModelConfig templateMakerModelConfig = templateMakerConfig.getTemplateMakerModelConfig();
+
+
+        if (ObjectUtil.isNull(id)) {
             id = IdUtil.getSnowflakeNextId();
         }
         // 指定项目原始路
@@ -230,8 +237,8 @@ public class TemplateMarker {
         // 输出模板文件
         //文件配置信息（具体的文件）
         Meta.FileConfig.FileInfo fileInfo = new Meta.FileConfig.FileInfo();
-        fileInfo.setInputPath(fileInputPath);
-        fileInfo.setOutputPath(fileOutputPath);
+        fileInfo.setInputPath(fileOutputPath);
+        fileInfo.setOutputPath(fileInputPath);
         fileInfo.setType(FileTypeEnum.FILE.getValue());
         fileInfo.setGenerateType(FileGenerateTypeEnum.DYNAMIC.getValue());
 
@@ -243,10 +250,8 @@ public class TemplateMarker {
         if (!hasTemplateFile) {
             if (contentEquals) {
                 fileInfo.setGenerateType(FileGenerateTypeEnum.STATIC.getValue());
-                fileInfo.setOutputPath(fileInputPath);
-
+                fileInfo.setInputPath(fileInputPath);
             } else {
-
                 FileUtil.writeUtf8String(newFileContent, fileOutputAbsolutePath);
             }
         } else if (!contentEquals) {
@@ -395,10 +400,6 @@ public class TemplateMarker {
 //        modelInfo.setType("String");
 //        modelInfo.setDefaultValue("sum = ");
 //        String str = "Sum is ";
-
-
-
-
         //文件过滤配置
         TemplateMakerFileConfig.FileInfoConfig fileInfoConfig1 = new TemplateMakerFileConfig.FileInfoConfig();
         fileInfoConfig1.setPath(fileInputPath1);
@@ -442,8 +443,8 @@ public class TemplateMarker {
         templateMakerModelConfig.setModels(modelInfoConfigList);
 
 
-        long id = makeTemplate(meta, originProjectPath, templateMakerFileConfig, templateMakerModelConfig, 1792188308500115456L);
-        System.out.println(id);
+       // long id = makeTemplate(meta, originProjectPath, templateMakerFileConfig, templateMakerModelConfig, 1792188308500115456L);
+       // System.out.println(id);
 
 
     }
