@@ -9,6 +9,7 @@ zero-generator.iml
 acm-template.iml
 zero-generator-demo-projects.iml
 zero-generator-basic.iml
+*.iml
 zero-generator-maker.iml
 
 ### Java template
@@ -49,5 +50,7 @@ buildNumber.properties
 .mvn/wrapper/maven-wrapper.jar
 
 /zero-generator-demo-projects/acm-templete/acm-templete.iml
-!/zero-generator-maker/zero-generator-maker.iml
-!/zero-generator-maker/generator
+/zero-generator-maker/zero-generator-maker.iml
+/zero-generator-basic/zero-generator-basic.iml
+/zero-generator-maker/generator
+/zero-generator-maker/zero-generator-maker.iml

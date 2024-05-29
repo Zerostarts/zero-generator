@@ -53,14 +53,17 @@ public class TemplateMakerModelConfig {
 
         private String groupName;
 
+        private String type;
+
+        private String description;
+
+
     }
 
 
 
     // TODO 有点小问题，每个model组里边应该是都有一个replacement
     public static List<ModelInfoConfig> templateModelInfoConfigAdapter(List<Meta.ModelConfig.ModelInfo> metaModelInfoList,String replacement) {
-
-
 
          return metaModelInfoList.stream().map(modelInfo -> {
             ModelInfoConfig modelInfoConfig = new ModelInfoConfig();
