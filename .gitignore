@@ -53,4 +53,5 @@ buildNumber.properties
 /zero-generator-maker/zero-generator-maker.iml
 /zero-generator-basic/zero-generator-basic.iml
 /zero-generator-maker/generator
-/zero-generator-maker/zero-generator-maker.iml
+/zero-generator-maker/.gitignore
+
