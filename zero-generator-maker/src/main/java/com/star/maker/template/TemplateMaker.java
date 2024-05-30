@@ -10,12 +10,9 @@ import cn.hutool.json.JSONUtil;
 import com.star.maker.meta.Meta;
 import com.star.maker.meta.enums.FileGenerateTypeEnum;
 import com.star.maker.meta.enums.FileTypeEnum;
-import com.star.maker.template.enums.FileFilterRangeEnum;
-import com.star.maker.template.enums.FileFilterRuleEnum;
 import com.star.maker.template.model.*;
 
 import java.io.File;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -83,7 +80,7 @@ public class TemplateMaker {
         List<Meta.ModelConfig.ModelInfo> newModelInfoList = getModelInfoList(templateMakerModelConfig);
 
         // 三、生成配置文件
-        String metaOutputPath = sourceRootPath + File.separator + "meta.json";
+        String metaOutputPath = templatePath + File.separator + "meta.json";
 
         // 已经有meta，则直接修改原有的配置文件
         if (FileUtil.exist(metaOutputPath)) {
@@ -177,7 +174,9 @@ public class TemplateMaker {
     }
 
 
-    private static List<Meta.FileConfig.FileInfo> makeFileTemplates(TemplateMakerFileConfig templateMakerFileConfig, TemplateMakerModelConfig templateMakerModelConfig, String sourceRootPath) {
+    private static List<Meta.FileConfig.FileInfo> makeFileTemplates(TemplateMakerFileConfig templateMakerFileConfig,
+                                                                    TemplateMakerModelConfig templateMakerModelConfig,
+                                                                    String sourceRootPath) {
         List<Meta.FileConfig.FileInfo> newFileInfoList = new ArrayList<>();
 
         //非空校验
@@ -201,10 +200,10 @@ public class TemplateMaker {
                 fileInputPath = sourceRootPath + File.separator + fileInputPath;
             }
 
-            List<File> fileList = FileFilter.doFilter(fileInputPath, fileInfoConfig.getFileFilterConfigList());
+            List<File> fileList = FileFilter.doFilter(fileInputPath, fileInfoConfig.getFilterConfigList());
             fileList = fileList.stream()
                     .filter(file -> {
-                        return file.getAbsolutePath().endsWith(".ftl");
+                        return !file.getAbsolutePath().endsWith(".ftl");
                     }).collect(Collectors.toList());
             for (File file : fileList) {
                 Meta.FileConfig.FileInfo fileInfo = makeFileTemplate(templateMakerModelConfig, sourceRootPath, file, fileInfoConfig);
