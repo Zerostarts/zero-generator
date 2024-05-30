@@ -9,9 +9,9 @@ public enum FileFilterRuleEnum {
 
 
     CONTAINS("包含", "contains"),
-    START_WITH("前缀匹配", "start_with"),
+    START_WITH("前缀匹配", "startsWith"),
 
-    END_WITH("后缀匹配", "end_with"),
+    END_WITH("后缀匹配", "endsWith"),
 
     REGEX("正则", "regex"),
 

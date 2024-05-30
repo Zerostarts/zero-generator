@@ -8,9 +8,9 @@ import cn.hutool.core.util.ObjectUtil;
 public enum FileFilterRangeEnum {
 
 
-    FILE_NAME("文件名称", "file_name"),
+    FILE_NAME("文件名称", "fileName"),
 
-    FILE_CONTENT("文件内容", "file_content");
+    FILE_CONTENT("文件内容", "fileContent");
 
     private final String text;
 
