@@ -80,7 +80,7 @@ public class GenerateCommand implements Callable<Integer> {
     BeanUtil.copyProperties(this, dataModel);
     <#list modelConfig.models as modelInfo>
         <#if modelInfo.groupKey??>
-            dataModel.${modelInfo.groupKey} = ${modelInfo.groupKey};
+        dataModel.${modelInfo.groupKey} = ${modelInfo.groupKey};
         </#if>
     </#list>
     MainGenerator.doGenerate(dataModel);

@@ -119,25 +119,25 @@ public class TemplateMarkerTest {
         templateMakerConfig = JSONUtil.toBean(configStr, TemplateMakerConfig.class);
         TemplateMaker.makeTemplate(templateMakerConfig);
 //
-//        configStr = ResourceUtil.readUtf8Str(rootPath + "templateMaker4.json");
-//        templateMakerConfig = JSONUtil.toBean(configStr, TemplateMakerConfig.class);
-//        TemplateMaker.makeTemplate(templateMakerConfig);
+        configStr = ResourceUtil.readUtf8Str(rootPath + "templateMaker4.json");
+        templateMakerConfig = JSONUtil.toBean(configStr, TemplateMakerConfig.class);
+        TemplateMaker.makeTemplate(templateMakerConfig);
 //
-//        configStr = ResourceUtil.readUtf8Str(rootPath + "templateMaker5.json");
-//        templateMakerConfig = JSONUtil.toBean(configStr, TemplateMakerConfig.class);
-//        TemplateMaker.makeTemplate(templateMakerConfig);
+        configStr = ResourceUtil.readUtf8Str(rootPath + "templateMaker5.json");
+        templateMakerConfig = JSONUtil.toBean(configStr, TemplateMakerConfig.class);
+        TemplateMaker.makeTemplate(templateMakerConfig);
+
+        configStr = ResourceUtil.readUtf8Str(rootPath + "templateMaker6.json");
+        templateMakerConfig = JSONUtil.toBean(configStr, TemplateMakerConfig.class);
+        TemplateMaker.makeTemplate(templateMakerConfig);
+
+        configStr = ResourceUtil.readUtf8Str(rootPath + "templateMaker7.json");
+        templateMakerConfig = JSONUtil.toBean(configStr, TemplateMakerConfig.class);
+        TemplateMaker.makeTemplate(templateMakerConfig);
 //
-//        configStr = ResourceUtil.readUtf8Str(rootPath + "templateMaker6.json");
-//        templateMakerConfig = JSONUtil.toBean(configStr, TemplateMakerConfig.class);
-//        TemplateMaker.makeTemplate(templateMakerConfig);
-//
-//        configStr = ResourceUtil.readUtf8Str(rootPath + "templateMaker7.json");
-//        templateMakerConfig = JSONUtil.toBean(configStr, TemplateMakerConfig.class);
-//        TemplateMaker.makeTemplate(templateMakerConfig);
-//
-//        configStr = ResourceUtil.readUtf8Str(rootPath + "templateMaker8.json");
-//        templateMakerConfig = JSONUtil.toBean(configStr, TemplateMakerConfig.class);
-//        TemplateMaker.makeTemplate(templateMakerConfig);
+        configStr = ResourceUtil.readUtf8Str(rootPath + "templateMaker8.json");
+        templateMakerConfig = JSONUtil.toBean(configStr, TemplateMakerConfig.class);
+        TemplateMaker.makeTemplate(templateMakerConfig);
 
         System.out.println(id);
     }
