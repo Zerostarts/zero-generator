@@ -151,7 +151,6 @@ export async function updateUserUsingPost(
 }
 
 /** updateMyUser POST /api/user/update/my */
-// @ts-ignore
 export async function updateMyUserUsingPost(
   body: API.UserUpdateMyRequest,
   options?: { [key: string]: any },
