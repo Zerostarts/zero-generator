@@ -6,7 +6,7 @@ spring:
     name: zero-generator-web-backend
   # 默认 dev 环境
   profiles:
-    active: dev
+    active: local
   # 支持 swagger3
   mvc:
     pathmatch:

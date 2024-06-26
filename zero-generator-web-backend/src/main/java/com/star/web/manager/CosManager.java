@@ -1,10 +1,17 @@
 package com.star.web.manager;
 
 import com.qcloud.cos.COSClient;
+import com.qcloud.cos.model.COSObject;
+import com.qcloud.cos.model.GetObjectRequest;
 import com.qcloud.cos.model.PutObjectRequest;
 import com.qcloud.cos.model.PutObjectResult;
+import com.qcloud.cos.transfer.Download;
+import com.qcloud.cos.transfer.TransferManager;
 import com.star.web.config.CosClientConfig;
 import java.io.File;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import org.springframework.stereotype.Component;
 
@@ -22,6 +29,19 @@ public class CosManager {
 
     @Resource
     private COSClient cosClient;
+
+    //复用下载对象
+    private TransferManager transferManager;
+
+    @PostConstruct
+    public void init() {
+        System.out.println("Bean 初始化成功");
+        // 多线程并发上传下载
+        // 自定义线程池大小，建议在客户端与 COS 网络充足（例如使用腾讯云的 CVM，同地域上传 COS）的情况下，设置成16或32即可，可较充分的利用网络资源
+        // 对于使用公网传输且网络带宽质量不高的情况，建议减小该值，避免因网速过慢，造成请求超时。
+        ExecutorService threadPool = Executors.newFixedThreadPool(32);
+        transferManager = new TransferManager(cosClient,threadPool);
+    }
 
     /**
      * 上传对象
@@ -48,4 +68,20 @@ public class CosManager {
                 file);
         return cosClient.putObject(putObjectRequest);
     }
+
+
+    public COSObject getObject(String key) {
+        GetObjectRequest getObjectRequest = new GetObjectRequest(cosClientConfig.getBucket(), key);
+        return cosClient.getObject(getObjectRequest);
+    }
+
+    public Download download(String key, String localFilePath) throws InterruptedException {
+        File downloadFile = new File(localFilePath);
+        GetObjectRequest getObjectRequest = new GetObjectRequest(cosClientConfig.getBucket(),key);
+        Download download = transferManager.download(getObjectRequest, downloadFile);
+        download.waitForCompletion();
+        return download;
+    }
+
+
 }

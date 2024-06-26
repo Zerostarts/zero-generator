@@ -1,10 +1,14 @@
 package com.star.web.controller;
 
 import cn.hutool.core.io.FileUtil;
+import com.qcloud.cos.model.COSObject;
+import com.qcloud.cos.model.COSObjectInputStream;
+import com.star.web.annotation.AuthCheck;
 import com.star.web.common.BaseResponse;
 import com.star.web.common.ErrorCode;
 import com.star.web.common.ResultUtils;
 import com.star.web.constant.FileConstant;
+import com.star.web.constant.UserConstant;
 import com.star.web.exception.BusinessException;
 import com.star.web.manager.CosManager;
 import com.star.web.model.dto.file.UploadFileRequest;
@@ -12,15 +16,16 @@ import com.star.web.model.entity.User;
 import com.star.web.model.enums.FileUploadBizEnum;
 import com.star.web.service.UserService;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -69,7 +74,7 @@ public class FileController {
             multipartFile.transferTo(file);
             cosManager.putObject(filepath, file);
             // 返回可访问地址
-            return ResultUtils.success(FileConstant.COS_HOST + filepath);
+            return ResultUtils.success(filepath);
         } catch (Exception e) {
             log.error("file upload error, filepath = " + filepath, e);
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传失败");
@@ -102,6 +107,63 @@ public class FileController {
             }
             if (!Arrays.asList("jpeg", "jpg", "svg", "png", "webp").contains(fileSuffix)) {
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件类型错误");
+            }
+        }
+    }
+
+
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @PostMapping("/test/upload")
+    public BaseResponse<String> testUploadFile(@RequestPart("file") MultipartFile multipartFile) {
+        // 文件目录
+        String fileName = multipartFile.getOriginalFilename();
+
+        String filePath = String .format("/test/%s", fileName);
+
+        File file = null;
+
+        try {
+            file = File.createTempFile(filePath, null);
+            multipartFile.transferTo(file);
+            cosManager.putObject(filePath, file);
+            return ResultUtils.success(filePath);
+        } catch (Exception e) {
+            log.error("file upload error, filepath = " + filePath, e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "文件上传失败");
+        } finally {
+            if (file != null) {
+                boolean delete = file.delete();
+
+                if (!delete) {
+                    log.error("file delete error, filepath = {]",  filePath);
+                }
+            }
+        }
+    }
+
+
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @GetMapping("/test/download")
+    public void testDownloadFile(String filePath, HttpServletResponse response) throws IOException {
+        COSObjectInputStream cosObjectInputStream = null;
+
+        try {
+            COSObject cosObject = cosManager.getObject(filePath);
+            cosObjectInputStream = cosObject.getObjectContent();
+            // 处理下载到的流
+            byte[] bytes = IOUtils.toByteArray(cosObjectInputStream);
+            // 设置响应头
+            response.setContentType("application/octet-stream;charset=UTF-8");
+            response.setHeader("Content-Disposition", "attachment;filename=" + filePath);
+            //写入响应
+            response.getOutputStream().write(bytes);
+            response.getOutputStream().flush();
+        } catch (Exception e) {
+            log.error("file download error, filepath=" + filePath, e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "文件下载失败");
+        } finally {
+            if (cosObjectInputStream!= null) {
+                cosObjectInputStream.close();
             }
         }
     }
