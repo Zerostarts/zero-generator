@@ -42,7 +42,10 @@ export const requestConfig: RequestConfig = {
       }
 
       // 文件下载时，直接返回
-      if (requestPath.includes("download")) {
+      // if (requestPath.includes("download")) {
+      //   return response;
+      // }
+      if (data instanceof Blob) {
         return response;
       }
 

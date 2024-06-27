@@ -363,12 +363,13 @@ public class GeneratorController {
                 .findFirst()
                 .orElseThrow(RuntimeException::new);
         // 添加可执行权限
-        Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxrwxrwx");
-        try {
-            Files.setPosixFilePermissions(scriptFile.toPath(), permissions);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+//        try {
+//            Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxrwxrwx");
+//            Files.setPosixFilePermissions(scriptFile.toPath(), permissions);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         // 构造命令
         File scriptDir = scriptFile.getParentFile();
         // 注意，如果是 mac / linux 系统，要用 "./generator"
@@ -397,8 +398,8 @@ public class GeneratorController {
         }
 
         // 压缩得到的生成结果，返回给前端
-        String generatedPath = scriptAbsolutePath + "/generator";
-        String resultZip = scriptAbsolutePath + "/result.zip";
+        String generatedPath = scriptDir + "/generated";
+        String resultZip = tempDirPath + "/result.zip";
         File resultFile = ZipUtil.zip(generatedPath, resultZip);
         // 设置响应头
 
@@ -411,9 +412,9 @@ public class GeneratorController {
 
         }
         // 清理文件
-        CompletableFuture.runAsync(() -> {
-            FileUtil.del(tempDirPath);
-        });
+//        CompletableFuture.runAsync(() -> {
+//            FileUtil.del(tempDirPath);
+//        });
     }
 
 

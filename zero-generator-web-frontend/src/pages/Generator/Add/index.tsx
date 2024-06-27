@@ -20,6 +20,7 @@ import {
 import {COS_HOST} from "@/constants";
 import { history } from '@umijs/max';
 import {message, UploadFile} from "antd";
+import ModelConfigForm from "@/pages/Generator/Add/components/ModelConfigForm";
 
 
 const GeneratorAddPage: React.FC = () => {
@@ -89,7 +90,7 @@ const GeneratorAddPage: React.FC = () => {
       const res = await editGeneratorUsingPost(values);
       if (res.data) {
         message.success('修改成功');
-        history.push(`/generator/details/${id}`);
+        history.push(`/generator/detail/${id}`);
       }
     } catch (error: any) {
       message.error('创建失败，' + error.message)
@@ -148,8 +149,15 @@ const GeneratorAddPage: React.FC = () => {
           <StepsForm.StepForm name="fileConfig" title="文件配置">
             {/* todo 待补充 */}
           </StepsForm.StepForm>
-          <StepsForm.StepForm name="modelConfig" title="模型配置">
-            {/* todo 待补充 */}
+          <StepsForm.StepForm
+            name="modelConfig"
+            title="模型配置"
+            onFinish={async (values) => {
+              console.log(values);
+              return true;
+            }}
+          >
+            <ModelConfigForm formRef={formRef} oldData={oldData} />
           </StepsForm.StepForm>
           <StepsForm.StepForm name="dist" title="生成器文件">
             <ProFormItem label="产物包" name="distPath">

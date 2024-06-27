@@ -48,6 +48,14 @@ export default [
     name:'生成器详情',
     hideInMenu: true
   },
+  {
+    path: '/generator/use/:id',
+    icon: 'home',
+    component: './Generator/Use',
+    name: '使用生成器',
+    hideInMenu: true,
+  },
+
   //{ path: '/', redirect: '/welcome' },
   { path: '*', layout: false, component: './404' },
 ];
