@@ -1,7 +1,7 @@
 package com.star.web.model.vo;
 
 import cn.hutool.json.JSONUtil;
-import com.star.web.meta.Meta;
+import com.star.maker.meta.Meta;
 import com.star.web.model.entity.Generator;
 import com.star.web.model.entity.Post;
 import java.io.Serializable;

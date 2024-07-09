@@ -57,6 +57,7 @@ public class GeneratorServiceImpl extends ServiceImpl<GeneratorMapper, Generator
         String name = generator.getName();
         String description = generator.getDescription();
 
+
         // 创建时，参数不能为空
         // 创建时，参数不能为空
         if (add) {

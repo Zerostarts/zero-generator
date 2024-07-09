@@ -1,12 +1,18 @@
 package com.star.web.controller;
 
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.ZipUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.qcloud.cos.model.COSObject;
 import com.qcloud.cos.model.COSObjectInputStream;
+import com.qcloud.cos.transfer.Download;
+import com.star.maker.generator.main.GenerateTemplate;
+import com.star.maker.generator.main.ZipGenerator;
+import com.star.maker.meta.MetaValidator;
 import com.star.web.annotation.AuthCheck;
 import com.star.web.common.BaseResponse;
 import com.star.web.common.DeleteRequest;
@@ -16,13 +22,14 @@ import com.star.web.constant.UserConstant;
 import com.star.web.exception.BusinessException;
 import com.star.web.exception.ThrowUtils;
 import com.star.web.manager.CosManager;
-import com.star.web.meta.Meta;
+import com.star.maker.meta.Meta;
 import com.star.web.model.dto.generator.*;
 import com.star.web.model.entity.Generator;
 import com.star.web.model.entity.User;
 import com.star.web.model.vo.GeneratorVO;
 import com.star.web.service.GeneratorService;
 import com.star.web.service.UserService;
+import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.BeanUtils;
@@ -34,6 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.List;
@@ -364,12 +372,12 @@ public class GeneratorController {
                 .orElseThrow(RuntimeException::new);
         // 添加可执行权限
 
-//        try {
-//            Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxrwxrwx");
-//            Files.setPosixFilePermissions(scriptFile.toPath(), permissions);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        try {
+            Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxrwxrwx");
+            Files.setPosixFilePermissions(scriptFile.toPath(), permissions);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         // 构造命令
         File scriptDir = scriptFile.getParentFile();
         // 注意，如果是 mac / linux 系统，要用 "./generator"
@@ -402,7 +410,6 @@ public class GeneratorController {
         String resultZip = tempDirPath + "/result.zip";
         File resultFile = ZipUtil.zip(generatedPath, resultZip);
         // 设置响应头
-
         response.setContentType("application/octet-stream;charset=UTF-8");
         response.setHeader("Content-Disposition", "attachment;filename=" + resultZip);
         // 写入响应
@@ -411,10 +418,70 @@ public class GeneratorController {
         } catch (IOException e) {
 
         }
+         //清理文件
+        CompletableFuture.runAsync(() -> {
+            FileUtil.del(tempDirPath);
+        });
+    }
+
+
+    @PostMapping("/make")
+    public void makeGenerator(@RequestBody GeneratorMakeRequest generatorMakeRequest,
+                              HttpServletRequest request,
+                              HttpServletResponse response) throws IOException {
+
+        String zipFilePath = generatorMakeRequest.getZipFilePath();
+        Meta meta = generatorMakeRequest.getMeta();
+        if (StrUtil.isBlank(zipFilePath)) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "压缩包不存在");
+        }
+        User loginUser = userService.getLoginUser(request);
+        // 定义一个独立的工作空间，从对象存储中下载对应的文件
+        String projectPath = System.getProperty("use.dir");
+        String id = IdUtil.getSnowflakeNextId() + RandomUtil.randomString(6);
+        String tempDirPath = String.format("%s/.temp/make/%s", projectPath, id);
+        //下载压缩包
+        String localFilePath = tempDirPath + "/project.zip";
+        if (!FileUtil.exist(localFilePath)) {
+            FileUtil.touch(localFilePath);
+        }
+        try {
+            cosManager.download(zipFilePath, localFilePath);
+        } catch (InterruptedException e) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "压缩包不存在");
+        }
+        // 解压压缩包,得到项目模板文件
+        File unzipDistDir = ZipUtil.unzip(localFilePath);
+        // 构造制作工具， 包括meta对象和生成器文件输出路径
+        String sourceRootPath = unzipDistDir.getAbsolutePath();
+        meta.getFileConfig().setSourceRootPath(sourceRootPath);
+        MetaValidator.validate(meta);
+        String outputPath = String.format("%s/generated/%s", tempDirPath,meta.getName());
+
+        // 调用制作工具
+
+        GenerateTemplate zipGenerator = new ZipGenerator();
+        try {
+            zipGenerator.doGenerate(meta, outputPath);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "制作失败");
+        }
+
+        // 返回制作好的代码生成器压缩包
+        String suffix = "-dist.zip";
+        String zipFileName = meta.getName() + suffix;
+        String distZipFilePath = outputPath + suffix;
+
+        // 设置响应头
+        response.setContentType("application/octet-stream;charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment;filename=" + zipFileName);
+        Files.copy(Paths.get(distZipFilePath), response.getOutputStream());
         // 清理文件
-//        CompletableFuture.runAsync(() -> {
-//            FileUtil.del(tempDirPath);
-//        });
+        CompletableFuture.runAsync(() -> {
+            FileUtil.del(tempDirPath);
+        });
+
     }
 
 

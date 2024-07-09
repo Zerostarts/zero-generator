@@ -24,6 +24,13 @@ public abstract class GenerateTemplate {
         //0 输出根路径
         String projectPath = System.getProperty("user.dir");
         String outputPath = projectPath + File.separator + "generated" + File.separator + meta.getName();
+        doGenerate(meta, outputPath);
+    }
+
+
+    public void doGenerate(Meta meta, String outputPath) throws TemplateException, IOException, InterruptedException {
+
+
         if (!FileUtil.exist(outputPath)) {
             FileUtil.mkdir(outputPath);
         }
