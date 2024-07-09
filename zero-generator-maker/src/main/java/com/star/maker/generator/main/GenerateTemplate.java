@@ -71,10 +71,8 @@ public abstract class GenerateTemplate {
 
     protected void generateCode(Meta meta, String outputPath) throws IOException, TemplateException {
         //读取resource目录
-        ClassPathResource classPathResource = new ClassPathResource("");
-        String inputResourcePath = classPathResource.getAbsolutePath();
+        String inputResourcePath = "";
         //Java包基础路径
-
         String outputBasePackage = meta.getBasePackage();
         String outputBasePackagePath = StrUtil.join("/", StrUtil.split(outputBasePackage, "."));
 

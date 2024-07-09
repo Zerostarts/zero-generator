@@ -372,12 +372,12 @@ public class GeneratorController {
                 .orElseThrow(RuntimeException::new);
         // 添加可执行权限
 
-        try {
-            Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxrwxrwx");
-            Files.setPosixFilePermissions(scriptFile.toPath(), permissions);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            Set<PosixFilePermission> permissions = PosixFilePermissions.fromString("rwxrwxrwx");
+//            Files.setPosixFilePermissions(scriptFile.toPath(), permissions);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         // 构造命令
         File scriptDir = scriptFile.getParentFile();
         // 注意，如果是 mac / linux 系统，要用 "./generator"
@@ -404,14 +404,13 @@ public class GeneratorController {
             e.printStackTrace();
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "执行生成器脚本错误");
         }
-
         // 压缩得到的生成结果，返回给前端
-        String generatedPath = scriptDir + "/generated";
-        String resultZip = tempDirPath + "/result.zip";
-        File resultFile = ZipUtil.zip(generatedPath, resultZip);
+        String generatedPath = scriptDir.getAbsolutePath() + "/generated";
+        String resultPath = tempDirPath + "/result.zip";
+        File resultFile = ZipUtil.zip(generatedPath, resultPath);
         // 设置响应头
         response.setContentType("application/octet-stream;charset=UTF-8");
-        response.setHeader("Content-Disposition", "attachment;filename=" + resultZip);
+        response.setHeader("Content-Disposition", "attachment;filename=" + resultFile);
         // 写入响应
         try {
             Files.copy(resultFile.toPath(),response.getOutputStream());
@@ -419,9 +418,9 @@ public class GeneratorController {
 
         }
          //清理文件
-        CompletableFuture.runAsync(() -> {
-            FileUtil.del(tempDirPath);
-        });
+//        CompletableFuture.runAsync(() -> {
+//            FileUtil.del(tempDirPath);
+//        });
     }
 
 
@@ -437,9 +436,9 @@ public class GeneratorController {
         }
         User loginUser = userService.getLoginUser(request);
         // 定义一个独立的工作空间，从对象存储中下载对应的文件
-        String projectPath = System.getProperty("use.dir");
+        String projectPath = System.getProperty("user.dir");
         String id = IdUtil.getSnowflakeNextId() + RandomUtil.randomString(6);
-        String tempDirPath = String.format("%s/.temp/make/%s", projectPath, id);
+        String tempDirPath = String.format("%s/temp/make/%s", projectPath, id);
         //下载压缩包
         String localFilePath = tempDirPath + "/project.zip";
         if (!FileUtil.exist(localFilePath)) {
@@ -478,9 +477,9 @@ public class GeneratorController {
         response.setHeader("Content-Disposition", "attachment;filename=" + zipFileName);
         Files.copy(Paths.get(distZipFilePath), response.getOutputStream());
         // 清理文件
-        CompletableFuture.runAsync(() -> {
-            FileUtil.del(tempDirPath);
-        });
+//        CompletableFuture.runAsync(() -> {
+//            FileUtil.del(tempDirPath);
+//        });
 
     }
 
