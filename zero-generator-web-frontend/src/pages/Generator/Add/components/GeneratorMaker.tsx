@@ -1,27 +1,10 @@
 import FileUploader from '@/components/FileUploader';
-import PictureUploader from '@/components/PictureUploader';
-
-import {useSearchParams} from '@@/exports';
-import type {ProFormInstance} from '@ant-design/pro-components';
-import {
-  ProCard, ProForm,
-  ProFormSelect,
-  ProFormText,
-  ProFormTextArea, StepsForm,
-} from '@ant-design/pro-components';
+import {ProForm,} from '@ant-design/pro-components';
 import {ProFormItem} from '@ant-design/pro-form';
 
-import React, {useEffect, useRef, useState} from 'react';
-import {
-  addGeneratorUsingPost,
-  editGeneratorUsingPost,
-  getGeneratorVoByIdUsingGet, makeGeneratorUsingPost
-} from "@/services/backend/generatorController";
-import {COS_HOST} from "@/constants";
-import {history} from '@umijs/max';
-import {Collapse, Form, message, UploadFile} from "antd";
-import ModelConfigForm from "@/pages/Generator/Add/components/ModelConfigForm";
-import FileConfigForm from "@/pages/Generator/Add/components/FileConfigForm";
+import React from 'react';
+import {makeGeneratorUsingPost} from "@/services/backend/generatorController";
+import {Collapse, Form, message} from "antd";
 import {saveAs} from "file-saver";
 
 

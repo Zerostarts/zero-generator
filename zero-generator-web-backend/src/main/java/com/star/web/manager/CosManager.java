@@ -1,14 +1,13 @@
 package com.star.web.manager;
 
 import com.qcloud.cos.COSClient;
-import com.qcloud.cos.model.COSObject;
-import com.qcloud.cos.model.GetObjectRequest;
-import com.qcloud.cos.model.PutObjectRequest;
-import com.qcloud.cos.model.PutObjectResult;
+import com.qcloud.cos.model.*;
 import com.qcloud.cos.transfer.Download;
 import com.qcloud.cos.transfer.TransferManager;
 import com.star.web.config.CosClientConfig;
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.annotation.PostConstruct;
@@ -84,4 +83,18 @@ public class CosManager {
     }
 
 
+    /**
+     * 流式处理代码
+     * @param cosObjectInput
+     * @param out
+     * @throws IOException
+     */
+
+    public  void download2Stream(COSObjectInputStream cosObjectInput, OutputStream out) throws IOException {
+        byte[] buffer = new byte[4096];
+        int bytesRead;
+        while ((bytesRead = cosObjectInput.read(buffer))!= -1) {
+            out.write(buffer, 0, bytesRead);
+        }
+    }
 }
