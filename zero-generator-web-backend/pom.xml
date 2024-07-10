@@ -19,6 +19,13 @@
         <java.version>1.8</java.version>
     </properties>
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/io.vertx/vertx-core -->
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+            <version>4.5.4</version>
+        </dependency>
+
         <dependency>
             <groupId>com.star</groupId>
             <artifactId>zero-generator-maker</artifactId>

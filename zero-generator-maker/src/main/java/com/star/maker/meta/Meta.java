@@ -3,6 +3,7 @@ package com.star.maker.meta;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.util.List;
 
 @NoArgsConstructor
@@ -21,7 +22,7 @@ public class Meta {
 
     @NoArgsConstructor
     @Data
-    public static class FileConfig {
+    public static class FileConfig implements Serializable {
         /**
          * 输入相对路径
          */
@@ -53,7 +54,7 @@ public class Meta {
 
     @NoArgsConstructor
     @Data
-    public static class ModelConfig {
+    public static class ModelConfig implements Serializable{
         private List<ModelInfo> models;
 
         @NoArgsConstructor
